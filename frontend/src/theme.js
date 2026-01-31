@@ -3,34 +3,54 @@ import { createTheme } from '@mui/material/styles';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2',
-      light: '#42a5f5',
-      dark: '#1565c0',
+      main: '#1C75FF',
+      light: '#4D92FF',
+      dark: '#0052CC',
     },
     secondary: {
-      main: '#dc004e',
+      main: '#0ABF58',
     },
     success: {
-      main: '#4caf50',
+      main: '#0ABF58',
     },
     warning: {
       main: '#ff9800',
     },
     error: {
-      main: '#f44336',
+      main: '#FF3B30',
     },
     background: {
-      default: '#f5f5f5',
+      default: '#ffffff',
       paper: '#ffffff',
+    },
+    grey: {
+      50: '#E9EDF2',
+      100: '#E9EDF2',
+      900: '#1A1A1A',
     },
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    h1: {
+      fontWeight: 800,
+      fontFamily: '"Inter", sans-serif',
+    },
+    h2: {
+      fontWeight: 800,
+      fontFamily: '"Inter", sans-serif',
+    },
+    h3: {
+      fontWeight: 700,
+      fontFamily: '"Inter", sans-serif',
+    },
     h4: {
-      fontWeight: 600,
+      fontWeight: 700,
     },
     h5: {
-      fontWeight: 500,
+      fontWeight: 600,
+    },
+    body1: {
+      fontWeight: 400,
     },
   },
   components: {
@@ -38,14 +58,29 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           textTransform: 'none',
-          borderRadius: 8,
+          borderRadius: 50,
+          padding: '12px 32px',
+          fontSize: '1rem',
+          fontWeight: 600,
+          boxShadow: '0 4px 14px 0 rgba(28, 117, 255, 0.25)',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: '0 6px 20px 0 rgba(28, 117, 255, 0.35)',
+          },
         },
       },
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
+          borderRadius: 20,
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: '0 12px 48px rgba(0, 0, 0, 0.12)',
+          },
         },
       },
     },

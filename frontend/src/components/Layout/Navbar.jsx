@@ -46,7 +46,7 @@ export default function Navbar() {
         </Typography>
 
         <Box sx={{ flexGrow: 1, display: 'flex', gap: 1 }}>
-          <Button color="inherit" startIcon={<HomeIcon />} onClick={() => navigate('/')}>
+          <Button color="inherit" startIcon={<HomeIcon />} onClick={() => navigate('/home')}>
             {t('home')}
           </Button>
           

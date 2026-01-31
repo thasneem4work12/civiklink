@@ -7,6 +7,7 @@ import { Box } from '@mui/material';
 import Navbar from './components/Layout/Navbar';
 
 // Pages
+import LandingPage from './pages/Landing/LandingPage';
 import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
 import HomePage from './pages/Home/HomePage';
@@ -44,13 +45,17 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route 
+            path="/" 
+            element={user ? <Navigate to="/home" /> : <LandingPage />} 
+          />
+          <Route 
             path="/login" 
-            element={user ? <Navigate to="/" /> : <LoginPage />} 
+            element={user ? <Navigate to="/home" /> : <LoginPage />} 
           />
           <Route 
             path="/register" 
-            element={user ? <Navigate to="/" /> : <RegisterPage />} 
-          />
+            element={user ? <Navigate to="/home" /> : <RegisterPage />} 
+          />home
 
           {/* Protected Routes */}
           <Route
@@ -119,7 +124,7 @@ function App() {
           />
 
           {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to={user ? "/home" : "/"} replace />} />
         </Routes>
       </Box>
     </Box>
