@@ -9,21 +9,22 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mui/material": "^5.15.3",
-    "@mui/icons-material": "^5.15.3",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.15.3",
+    "@mui/material": "^5.15.3",
     "@reduxjs/toolkit": "^2.0.1",
+    "axios": "^1.6.2",
+    "i18next": "^23.7.8",
+    "leaflet": "^1.9.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.4.1",
+    "react-i18next": "^14.0.0",
+    "react-leaflet": "^4.2.1",
     "react-redux": "^9.0.4",
     "react-router-dom": "^6.21.1",
-    "axios": "^1.6.2",
-    "leaflet": "^1.9.4",
-    "react-leaflet": "^4.2.1",
-    "i18next": "^23.7.8",
-    "react-i18next": "^14.0.0",
-    "react-hot-toast": "^2.4.1"
+    "recharts": "^3.7.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.45",

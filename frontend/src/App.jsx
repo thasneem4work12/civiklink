@@ -10,7 +10,13 @@ import Navbar from './components/Layout/Navbar';
 import LandingPage from './pages/Landing/LandingPage';
 import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
+import VerifyOTPPage from './pages/Auth/VerifyOTPPage';
+import CompleteProfilePage from './pages/Auth/CompleteProfilePage';
 import HomePage from './pages/Home/HomePage';
+import PublicFeedPage from './pages/Public/PublicFeedPage';
+import LeaderboardPage from './pages/Leaderboard/LeaderboardPage';
+import SuccessStoryPage from './pages/SuccessStory/SuccessStoryPage';
+import AnalyticsReportPage from './pages/Analytics/AnalyticsReportPage';
 import PostIssuePage from './pages/Issues/PostIssuePage';
 import MyIssuesPage from './pages/Issues/MyIssuesPage';
 import IssueDetailPage from './pages/Issues/IssueDetailPage';
@@ -39,10 +45,7 @@ function App() {
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {user && <Navbar />}
-      
-      <Box component="main" sx={{ flexGrow: 1, pt: user ? 8 : 0 }}>
-        <Routes>
+      <Routes>
           {/* Public Routes */}
           <Route 
             path="/" 
@@ -55,19 +58,65 @@ function App() {
           <Route 
             path="/register" 
             element={user ? <Navigate to="/home" /> : <RegisterPage />} 
-          />home
+          />
+          <Route 
+            path="/verify-otp" 
+            element={user ? <Navigate to="/home" /> : <VerifyOTPPage />} 
+          />
+          <Route 
+            path="/register/complete" 
+            element={user ? <Navigate to="/home" /> : <CompleteProfilePage />} 
+          />
 
           {/* Protected Routes */}
           <Route
-            path="/"
+            path="/home"
             element={
               <ProtectedRoute>
                 <HomePage />
               </ProtectedRoute>
             }
           />
+          <Route            path="/public-feed"
+            element={
+              <ProtectedRoute>
+                <PublicFeedPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
-            path="/post-issue"
+            path="/leaderboard"
+            element={
+              <ProtectedRoute>
+                <LeaderboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/success-story"
+            element={
+              <ProtectedRoute>
+                <SuccessStoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analytics-report"
+            element={
+              <ProtectedRoute>
+                <AnalyticsReportPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/issues/new"
+            element={
+              <ProtectedRoute>
+                <PostIssuePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route            path="/post-issue"
             element={
               <ProtectedRoute allowedRoles={['citizen']}>
                 <PostIssuePage />
@@ -126,7 +175,6 @@ function App() {
           {/* Fallback */}
           <Route path="*" element={<Navigate to={user ? "/home" : "/"} replace />} />
         </Routes>
-      </Box>
     </Box>
   );
 }

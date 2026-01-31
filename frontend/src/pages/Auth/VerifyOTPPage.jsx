@@ -1,55 +1,129 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { register, clearError } from '../../redux/slices/authSlice';
-import { 
-  Box, TextField, Button, Typography, Alert, IconButton, InputAdornment
-} from '@mui/material';
-import { 
-  Security, Speed, Verified, Phone, Email, Lock
-} from '@mui/icons-material';
-import { useTranslation } from 'react-i18next';
+import { Box, TextField, Button, Typography, Alert } from '@mui/material';
+import { Security, Speed, Verified } from '@mui/icons-material';
 import toast from 'react-hot-toast';
 
-export default function RegisterPage() {
+export default function VerifyOTPPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state) => state.auth);
-  const { t } = useTranslation();
 
-  const [useEmail, setUseEmail] = useState(false);
-  const [formData, setFormData] = useState({
-    mobile: '',
-    email: '',
-  });
+  const [otp, setOtp] = useState(['', '', '', '']);
+  const [timer, setTimer] = useState(20);
+  const [canResend, setCanResend] = useState(false);
+  const inputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
 
+  // Get phone/email from previous page
+  const contactInfo = location.state?.contactInfo || '+94 77 XXX XXXX';
+  const contactType = location.state?.contactType || 'mobile';
+
+  // Timer countdown
   useEffect(() => {
-    dispatch(clearError());
-  }, [dispatch]);
+    if (timer > 0) {
+      const interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    } else {
+      setCanResend(true);
+    }
+  }, [timer]);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  // Auto-focus first input on mount
+  useEffect(() => {
+    inputRefs[0]?.current?.focus();
+  }, []);
+
+  const handleOtpChange = (index, value) => {
+    // Only allow digits
+    if (!/^\d*$/.test(value)) return;
+
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    // Auto-focus next input
+    if (value && index < 3) {
+      inputRefs[index + 1]?.current?.focus();
+    }
   };
 
-  const handleSendOTP = async (e) => {
+  const handleKeyDown = (index, e) => {
+    // Handle backspace
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs[index - 1]?.current?.focus();
+    }
+  };
+
+  const handlePaste = (e) => {
     e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').slice(0, 4).split('');
+    const newOtp = [...otp];
+    pastedData.forEach((char, idx) => {
+      if (idx < 4 && /^\d$/.test(char)) {
+        newOtp[idx] = char;
+      }
+    });
+    setOtp(newOtp);
     
-    const contactValue = useEmail ? formData.email : formData.mobile;
-    if (!contactValue) {
-      toast.error('Please enter your contact information');
+    // Focus last filled input or next empty
+    const lastFilledIndex = newOtp.findIndex(val => !val);
+    const focusIndex = lastFilledIndex === -1 ? 3 : lastFilledIndex;
+    inputRefs[focusIndex]?.current?.focus();
+  };
+
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    const otpCode = otp.join('');
+    
+    if (otpCode.length !== 4) {
+      toast.error('Please enter complete OTP');
       return;
     }
 
-    // TODO: Implement actual OTP sending logic
-    toast.success('OTP sent successfully!');
+    // TODO: Implement actual OTP verification
+    toast.success('OTP verified successfully!');
+    navigate('/register/complete', { state: { contactInfo, contactType } });
+  };
+
+  const handleResend = () => {
+    if (!canResend) return;
     
-    // Navigate to OTP verification page
-    navigate('/verify-otp', {
-      state: {
-        contactInfo: contactValue,
-        contactType: useEmail ? 'email' : 'mobile',
-      },
-    });
+    // TODO: Implement resend OTP logic
+    toast.success('OTP resent successfully!');
+    setTimer(20);
+    setCanResend(false);
+    setOtp(['', '', '', '']);
+    inputRefs[0]?.current?.focus();
+  };
+
+  const handleChangeNumber = () => {
+    navigate('/register');
+  };
+
+  const formatTimer = () => {
+    const minutes = Math.floor(timer / 60);
+    const seconds = timer % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const maskContactInfo = (info) => {
+    if (contactType === 'mobile') {
+      // Mask middle digits: +94 77 XXX XXXX
+      const parts = info.split(' ');
+      if (parts.length >= 3) {
+        return `${parts[0]} ${parts[1]} XXX ${parts[parts.length - 1]}`;
+      }
+    }
+    // For email: mas***@example.com
+    if (info.includes('@')) {
+      const [local, domain] = info.split('@');
+      return `${local.substring(0, 3)}***@${domain}`;
+    }
+    return info;
   };
 
   return (
@@ -152,7 +226,7 @@ export default function RegisterPage() {
 
         {/* Content Area */}
         <Box sx={{ display: 'flex', minHeight: 480 }}>
-          {/* Left Section - Branding */}
+          {/* Left Section - Branding (Same as Register Page) */}
           <Box
             sx={{
               flex: 1,
@@ -372,7 +446,7 @@ export default function RegisterPage() {
             </Box>
           </Box>
 
-          {/* Right Section - Registration Form */}
+          {/* Right Section - OTP Verification Form */}
           <Box
             sx={{
               flex: 1,
@@ -393,87 +467,97 @@ export default function RegisterPage() {
                   mb: 1,
                 }}
               >
-                Create Your Account
+                Verify Your Number
               </Typography>
               <Typography
                 sx={{
                   fontFamily: 'Inter',
-                  fontSize: 14,
+                  fontSize: 13,
                   color: '#6B7280',
                   mb: 4,
                 }}
               >
-                Join thousands of citizens making a difference
+                Please enter 4 digit code sent to{' '}
+                <strong>{maskContactInfo(contactInfo)}</strong>{' '}
+                <Button
+                  onClick={handleChangeNumber}
+                  sx={{
+                    color: '#2563EB',
+                    textTransform: 'none',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    minWidth: 'auto',
+                    p: 0,
+                    '&:hover': {
+                      background: 'transparent',
+                      textDecoration: 'underline',
+                    },
+                  }}
+                >
+                  (Change?)
+                </Button>
               </Typography>
 
               {error && (
-                <Alert severity="error" sx={{ mb: 2, borderRadius: 2, fontSize: 13 }}>
+                <Alert severity="error" sx={{ mb: 3, borderRadius: 2, fontSize: 13 }}>
                   {error}
                 </Alert>
               )}
 
-              <Box component="form" onSubmit={handleSendOTP}>
-                {/* Mobile Number / Email Field */}
-                <Typography
+              <Box component="form" onSubmit={handleVerify}>
+                {/* OTP Input Boxes */}
+                <Box
                   sx={{
-                    fontFamily: 'Inter',
-                    fontWeight: 600,
-                    fontSize: 13,
-                    color: '#374151',
-                    mb: 1,
+                    display: 'flex',
+                    gap: 2,
+                    justifyContent: 'center',
+                    mb: 4,
                   }}
                 >
-                  {useEmail ? 'Email Address' : 'Mobile Number'}
-                </Typography>
-                <TextField
-                  fullWidth
-                  size="medium"
-                  name={useEmail ? 'email' : 'mobile'}
-                  type={useEmail ? 'email' : 'tel'}
-                  placeholder={useEmail ? 'you@example.com' : '+94 XX XXX XXXX'}
-                  value={useEmail ? formData.email : formData.mobile}
-                  onChange={handleChange}
-                  required
-                  sx={{ mb: 1 }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        {useEmail ? (
-                          <Email sx={{ color: '#9CA3AF', fontSize: 20 }} />
-                        ) : (
-                          <Phone sx={{ color: '#9CA3AF', fontSize: 20 }} />
-                        )}
-                      </InputAdornment>
-                    ),
-                    sx: {
-                      fontFamily: 'Inter',
-                      fontSize: 14,
-                      backgroundColor: '#F9FAFB',
-                      borderRadius: 2,
-                      '& fieldset': { border: '1.5px solid #E5E7EB' },
-                      '&:hover fieldset': { border: '1.5px solid #D1D5DB' },
-                      '&.Mui-focused fieldset': { border: '1.5px solid #2563EB' },
-                    },
-                  }}
-                />
+                  {otp.map((digit, index) => (
+                    <TextField
+                      key={index}
+                      inputRef={inputRefs[index]}
+                      value={digit}
+                      onChange={(e) => handleOtpChange(index, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(index, e)}
+                      onPaste={index === 0 ? handlePaste : undefined}
+                      inputProps={{
+                        maxLength: 1,
+                        style: {
+                          textAlign: 'center',
+                          fontSize: 24,
+                          fontWeight: 600,
+                          fontFamily: 'Inter',
+                        },
+                      }}
+                      sx={{
+                        width: 64,
+                        '& .MuiOutlinedInput-root': {
+                          height: 64,
+                          borderRadius: 2.5,
+                          backgroundColor: '#F9FAFB',
+                          '& fieldset': {
+                            border: '2px solid #E5E7EB',
+                          },
+                          '&:hover fieldset': {
+                            border: '2px solid #D1D5DB',
+                          },
+                          '&.Mui-focused fieldset': {
+                            border: '2px solid #2563EB',
+                          },
+                        },
+                      }}
+                    />
+                  ))}
+                </Box>
 
-                <Typography
-                  sx={{
-                    fontFamily: 'Inter',
-                    fontSize: 12,
-                    color: '#9CA3AF',
-                    mb: 3,
-                  }}
-                >
-                  We'll send you a verification code
-                </Typography>
-
-                {/* Send OTP Button */}
+                {/* Verify Button */}
                 <Button
                   fullWidth
                   type="submit"
                   variant="contained"
-                  disabled={loading}
+                  disabled={loading || otp.some(d => !d)}
                   sx={{
                     height: 48,
                     py: 1.5,
@@ -483,102 +567,23 @@ export default function RegisterPage() {
                     fontWeight: 600,
                     fontSize: 15,
                     textTransform: 'none',
-                    mb: 2,
+                    mb: 3,
                     boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)',
                     '&:hover': {
                       background: 'linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)',
                       boxShadow: '0 6px 20px rgba(37, 99, 235, 0.5)',
                     },
-                  }}
-                >
-                  {loading ? 'Sending...' : 'Send OTP'}
-                </Button>
-
-                {/* Use Email/Mobile Toggle */}
-                <Box sx={{ textAlign: 'center', mb: 3 }}>
-                  <Button
-                    onClick={() => setUseEmail(!useEmail)}
-                    sx={{
-                      color: '#2563EB',
-                      textTransform: 'none',
-                      fontSize: 13,
-                      fontWeight: 600,
-                      '&:hover': {
-                        background: 'transparent',
-                        textDecoration: 'underline',
-                      },
-                    }}
-                  >
-                    {useEmail ? 'Use Mobile Instead' : 'Use Email Instead'}
-                  </Button>
-                </Box>
-
-                {/* SL-UDI Button (Disabled) */}
-                <Button
-                  fullWidth
-                  disabled
-                  variant="outlined"
-                  startIcon={<Lock sx={{ fontSize: 18 }} />}
-                  sx={{
-                    height: 48,
-                    py: 1.5,
-                    borderRadius: 2.5,
-                    fontFamily: 'Inter',
-                    fontWeight: 500,
-                    fontSize: 14,
-                    textTransform: 'none',
-                    mb: 3,
-                    color: '#9CA3AF',
-                    borderColor: '#E5E7EB',
-                    backgroundColor: '#F9FAFB',
-                  }}
-                >
-                  Register with SL-UDI (Coming Soon)
-                </Button>
-
-                {/* Terms & Privacy */}
-                <Box sx={{ textAlign: 'center' }}>
-                  <Typography
-                    sx={{
-                      fontFamily: 'Inter',
-                      fontSize: 12,
+                    '&:disabled': {
+                      background: '#E5E7EB',
                       color: '#9CA3AF',
-                      mb: 0.5,
-                    }}
-                  >
-                    By continuing, you agree to our
-                  </Typography>
-                  <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-                    <Link
-                      to="/terms"
-                      style={{
-                        fontFamily: 'Inter',
-                        fontSize: 12,
-                        color: '#2563EB',
-                        textDecoration: 'none',
-                        fontWeight: 600,
-                      }}
-                    >
-                      Terms of Service
-                    </Link>
-                    <Typography sx={{ fontSize: 12, color: '#9CA3AF' }}>and</Typography>
-                    <Link
-                      to="/privacy"
-                      style={{
-                        fontFamily: 'Inter',
-                        fontSize: 12,
-                        color: '#2563EB',
-                        textDecoration: 'none',
-                        fontWeight: 600,
-                      }}
-                    >
-                      Privacy Policy
-                    </Link>
-                  </Box>
-                </Box>
+                    },
+                  }}
+                >
+                  {loading ? 'Verifying...' : 'Verify and Proceed'}
+                </Button>
 
-                {/* Login Link */}
-                <Box sx={{ textAlign: 'center', mt: 3, pt: 3, borderTop: '1px solid #E5E7EB' }}>
+                {/* Resend OTP */}
+                <Box sx={{ textAlign: 'center' }}>
                   <Typography
                     sx={{
                       fontFamily: 'Inter',
@@ -586,17 +591,30 @@ export default function RegisterPage() {
                       color: '#6B7280',
                     }}
                   >
-                    Already have an account?{' '}
-                    <Link
-                      to="/login"
-                      style={{
-                        color: '#2563EB',
-                        textDecoration: 'none',
-                        fontWeight: 600,
-                      }}
-                    >
-                      Sign In
-                    </Link>
+                    Didn't receive code?{' '}
+                    {canResend ? (
+                      <Button
+                        onClick={handleResend}
+                        sx={{
+                          color: '#2563EB',
+                          textTransform: 'none',
+                          fontSize: 13,
+                          fontWeight: 600,
+                          minWidth: 'auto',
+                          p: 0,
+                          '&:hover': {
+                            background: 'transparent',
+                            textDecoration: 'underline',
+                          },
+                        }}
+                      >
+                        Resend
+                      </Button>
+                    ) : (
+                      <span style={{ color: '#9CA3AF', fontWeight: 500 }}>
+                        Resend in {formatTimer()}s
+                      </span>
+                    )}
                   </Typography>
                 </Box>
               </Box>
