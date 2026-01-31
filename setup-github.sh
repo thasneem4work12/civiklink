@@ -54,3 +54,4 @@ else
     echo ""
     echo "Copy the commands above and run them manually."
 fi
+
