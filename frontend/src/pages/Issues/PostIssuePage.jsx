@@ -1,260 +1,477 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { createIssue } from '../../redux/slices/issueSlice';
+import { useSelector } from 'react-redux';
 import {
   Box,
   Container,
   Typography,
   TextField,
   Button,
+  IconButton,
   Card,
   CardContent,
-  Grid,
-  IconButton,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Chip,
 } from '@mui/material';
 import {
   ArrowBack,
-  WaterDrop,
-  Bolt,
-  Construction,
-  Flood,
-  Delete,
-  LocationOn,
+  Language,
+  MyLocation,
+  Map,
+  CloudUpload,
 } from '@mui/icons-material';
-import { publicAPI } from '../../services/api';
-import toast from 'react-hot-toast';
+import WaterDropIcon from '@mui/icons-material/WaterDrop';
+import BoltIcon from '@mui/icons-material/Bolt';
+import TerrainIcon from '@mui/icons-material/Terrain';
+import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
+import WarningIcon from '@mui/icons-material/Warning';
 
 export default function PostIssuePage() {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { loading } = useSelector((state) => state.issues);
+  const { user } = useSelector((state) => state.auth);
   
-  const [districts, setDistricts] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     category: '',
-    location: {
-      address: '',
-      district: '',
-      coordinates: [6.9271, 79.8612], // Default to Colombo
-    },
-    priority: 'medium',
-    images: [],
+    photos: [],
   });
 
-  useEffect(() => {
-    // Fetch districts
-    publicAPI.getDistricts()
-      .then(res => setDistricts(res.data.districts))
-      .catch(err => console.error('Failed to fetch districts:', err));
-    
-    // Fetch categories
-    publicAPI.getCategories()
-      .then(res => setCategories(res.data.categories))
-      .catch(err => console.error('Failed to fetch categories:', err));
-  }, []);
+  const categories = [
+    { id: 'water', label: 'Water', icon: WaterDropIcon, color: '#0EA5E9' },
+    { id: 'electricity', label: 'Electricity', icon: BoltIcon, color: '#F59E0B' },
+    { id: 'road', label: 'Road', icon: TerrainIcon, color: '#6B7280' },
+    { id: 'sanitation', label: 'Sanitation', icon: CleaningServicesIcon, color: '#10B981' },
+    { id: 'emergency', label: 'Emergency', icon: WarningIcon, color: '#EF4444' },
+  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name.startsWith('location.')) {
-      const field = name.split('.')[1];
-      setFormData({
-        ...formData,
-        location: { ...formData.location, [field]: value }
-      });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+    setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // Validation
-    if (!formData.title || !formData.description || !formData.category) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    if (!formData.location.address || !formData.location.district) {
-      toast.error('Please provide location details');
-      return;
-    }
-
-    const result = await dispatch(createIssue(formData));
-    if (result.type === 'issues/createIssue/fulfilled') {
-      toast.success('Issue reported successfully!');
-      navigate('/my-issues');
-    } else {
-      toast.error(result.payload || 'Failed to create issue');
-    }
+  const handleCategorySelect = (categoryId) => {
+    setFormData({ ...formData, category: categoryId });
   };
 
-  const getCategoryIcon = (categoryId) => {
-    switch (categoryId) {
-      case 'water': return <WaterDrop />;
-      case 'electricity': return <Bolt />;
-      case 'road': return <Construction />;
-      case 'flood': return <Flood />;
-      default: return null;
-    }
+  const handleFileUpload = (e) => {
+    const files = Array.from(e.target.files);
+    setFormData({ ...formData, photos: [...formData.photos, ...files] });
+  };
+
+  const handleSubmit = () => {
+    // Handle form submission
+    console.log('Form data:', formData);
+    // Navigate to success page or back
+    navigate('/home');
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#F9FAFB' }}>
-      {/* Header */}
-      <Box sx={{ bgcolor: 'white', borderBottom: '1px solid #E5E7EB', py: 2, px: 4 }}>
-        <Container maxWidth="md">
+    <Box sx={{ minHeight: '100vh', background: '#F9FAFB' }}>
+      {/* Top Navigation */}
+      <Box
+        sx={{
+          background: 'white',
+          borderBottom: '1px solid #E5E7EB',
+          py: 1.5,
+          px: 4,
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            maxWidth: 1400,
+            mx: 'auto',
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <IconButton onClick={() => navigate(-1)}>
-              <ArrowBack />
+            <IconButton onClick={() => navigate(-1)} size="small">
+              <ArrowBack sx={{ color: '#6B7280' }} />
             </IconButton>
-            <Typography variant="h5" sx={{ fontWeight: 600 }}>
-              Report an Issue
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box
+                component="img"
+                src="/images/logo.png"
+                alt="CivikLink SL"
+                sx={{ width: 36, height: 36, objectFit: 'contain' }}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+              <Typography
+                sx={{
+                  fontFamily: 'Inter',
+                  fontWeight: 700,
+                  fontSize: 18,
+                  color: '#1F2937',
+                }}
+              >
+                CivikLink SL
+              </Typography>
+            </Box>
+          </Box>
+
+          <Typography
+            sx={{
+              fontFamily: 'Inter',
+              fontWeight: 600,
+              fontSize: 18,
+              color: '#1F2937',
+            }}
+          >
+            Report an Issue
+          </Typography>
+
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              px: 1.5,
+              py: 0.5,
+              borderRadius: 1,
+              border: '1px solid #E5E7EB',
+              cursor: 'pointer',
+            }}
+          >
+            <Language sx={{ fontSize: 18, color: '#2563EB' }} />
+            <Typography sx={{ fontSize: 14, color: '#1F2937', fontWeight: 600 }}>
+              EN
             </Typography>
           </Box>
-        </Container>
+        </Box>
       </Box>
 
+      {/* Main Content */}
       <Container maxWidth="md" sx={{ py: 4 }}>
-        <Card>
+        <Card sx={{ boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderRadius: 3 }}>
           <CardContent sx={{ p: 4 }}>
-            <Box component="form" onSubmit={handleSubmit}>
-              {/* Title */}
+            {/* Issue Title */}
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                sx={{
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: '#1F2937',
+                  mb: 1,
+                  fontFamily: 'Inter',
+                }}
+              >
+                Issue Title <span style={{ color: '#EF4444' }}>*</span>
+              </Typography>
               <TextField
-                fullWidth
-                label="Issue Title"
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                required
-                sx={{ mb: 3 }}
-                placeholder="Brief description of the issue"
-              />
-
-              {/* Description */}
-              <TextField
+                placeholder="Ex. Water shortage in Navinma Road"
                 fullWidth
-                label="Description"
+                variant="outlined"
+                inputProps={{ maxLength: 60 }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    fontSize: 14,
+                    '& fieldset': {
+                      borderColor: '#E5E7EB',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#D1D5DB',
+                    },
+                  },
+                }}
+              />
+              <Typography
+                sx={{
+                  fontSize: 12,
+                  color: '#9CA3AF',
+                  textAlign: 'right',
+                  mt: 0.5,
+                }}
+              >
+                {formData.title.length}/60
+              </Typography>
+            </Box>
+
+            {/* Description */}
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                sx={{
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: '#1F2937',
+                  mb: 1,
+                  fontFamily: 'Inter',
+                }}
+              >
+                Description <span style={{ color: '#EF4444' }}>*</span>
+              </Typography>
+              <TextField
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                required
+                placeholder="Describe the issue in simple words..."
+                fullWidth
                 multiline
                 rows={4}
-                sx={{ mb: 3 }}
-                placeholder="Provide detailed information about the issue"
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    fontSize: 14,
+                    '& fieldset': {
+                      borderColor: '#E5E7EB',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#D1D5DB',
+                    },
+                  },
+                }}
               />
+            </Box>
 
-              {/* Category Selection */}
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-                Category *
+            {/* Tips */}
+            <Box
+              sx={{
+                background: '#EFF6FF',
+                borderRadius: 2,
+                p: 2,
+                mb: 3,
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: '#1E40AF',
+                  mb: 1,
+                  fontFamily: 'Inter',
+                }}
+              >
+                Tips for better reporting:
               </Typography>
-              <Grid container spacing={2} sx={{ mb: 3 }}>
-                {categories.map((category) => (
-                  <Grid item xs={6} sm={4} key={category.id}>
-                    <Card
-                      sx={{
-                        cursor: 'pointer',
-                        border: 2,
-                        borderColor: formData.category === category.id ? '#00796B' : 'transparent',
-                        bgcolor: formData.category === category.id ? '#E0F2F1' : 'white',
-                        '&:hover': { borderColor: '#00796B' },
-                      }}
-                      onClick={() => setFormData({ ...formData, category: category.id })}
-                    >
-                      <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                        {getCategoryIcon(category.id)}
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          {category.name_en}
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-
-              {/* Location */}
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-                Location *
-              </Typography>
-              <Grid container spacing={2} sx={{ mb: 3 }}>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Address"
-                    name="location.address"
-                    value={formData.location.address}
-                    onChange={handleChange}
-                    required
-                    placeholder="Street, building, or landmark"
-                    InputProps={{
-                      startAdornment: <LocationOn sx={{ mr: 1, color: '#6B7280' }} />,
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth required>
-                    <InputLabel>District</InputLabel>
-                    <Select
-                      name="location.district"
-                      value={formData.location.district}
-                      onChange={handleChange}
-                      label="District"
-                    >
-                      {districts.map((district) => (
-                        <MenuItem key={district} value={district}>
-                          {district}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth required>
-                    <InputLabel>Priority</InputLabel>
-                    <Select
-                      name="priority"
-                      value={formData.priority}
-                      onChange={handleChange}
-                      label="Priority"
-                    >
-                      <MenuItem value="low">Low</MenuItem>
-                      <MenuItem value="medium">Medium</MenuItem>
-                      <MenuItem value="high">High</MenuItem>
-                      <MenuItem value="critical">Critical</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-              </Grid>
-
-              {/* Submit Button */}
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 4 }}>
-                <Button
-                  variant="outlined"
-                  onClick={() => navigate(-1)}
-                  disabled={loading}
+              <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
+                <Typography
+                  component="li"
+                  sx={{ fontSize: 12, color: '#1E40AF', mb: 0.5 }}
                 >
-                  Cancel
+                  What happened?
+                </Typography>
+                <Typography
+                  component="li"
+                  sx={{ fontSize: 12, color: '#1E40AF', mb: 0.5 }}
+                >
+                  How long has it been?
+                </Typography>
+                <Typography component="li" sx={{ fontSize: 12, color: '#1E40AF' }}>
+                  Who is affected?
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Upload Photo/Video */}
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                sx={{
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: '#1F2937',
+                  mb: 1,
+                  fontFamily: 'Inter',
+                }}
+              >
+                Upload Photo / Video
+              </Typography>
+              <Box
+                component="label"
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: 180,
+                  border: '2px dashed #D1D5DB',
+                  borderRadius: 2,
+                  background: '#F9FAFB',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  '&:hover': {
+                    borderColor: '#2563EB',
+                    background: '#F0F9FF',
+                  },
+                }}
+              >
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*,video/*"
+                  onChange={handleFileUpload}
+                  style={{ display: 'none' }}
+                />
+                <CloudUpload sx={{ fontSize: 48, color: '#9CA3AF', mb: 1 }} />
+                <Typography
+                  sx={{
+                    fontSize: 14,
+                    color: '#6B7280',
+                    fontWeight: 500,
+                  }}
+                >
+                  Drop files here or click to upload
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: 12,
+                    color: '#9CA3AF',
+                    mt: 0.5,
+                  }}
+                >
+                  Photo (JPG/PNG) or Video (max 20 sec) • Max 5 files
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Category */}
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                sx={{
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: '#1F2937',
+                  mb: 1.5,
+                  fontFamily: 'Inter',
+                }}
+              >
+                Category <span style={{ color: '#EF4444' }}>*</span>
+              </Typography>
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 2,
+                  flexWrap: 'wrap',
+                }}
+              >
+                {categories.map((cat) => {
+                  const IconComponent = cat.icon;
+                  return (
+                    <Box
+                      key={cat.id}
+                      onClick={() => handleCategorySelect(cat.id)}
+                      sx={{
+                        flex: '1 1 calc(20% - 16px)',
+                        minWidth: 100,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 1,
+                        py: 2.5,
+                        px: 2,
+                        border: '2px solid',
+                        borderColor:
+                          formData.category === cat.id ? cat.color : '#E5E7EB',
+                        borderRadius: 2,
+                        background:
+                          formData.category === cat.id
+                            ? `${cat.color}08`
+                            : 'white',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        '&:hover': {
+                          borderColor: cat.color,
+                          background: `${cat.color}08`,
+                        },
+                      }}
+                    >
+                      <IconComponent sx={{ fontSize: 32, color: cat.color }} />
+                      <Typography
+                        sx={{
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: '#1F2937',
+                          fontFamily: 'Inter',
+                        }}
+                      >
+                        {cat.label}
+                      </Typography>
+                    </Box>
+                  );
+                })}
+              </Box>
+            </Box>
+
+            {/* Location */}
+            <Box sx={{ mb: 4 }}>
+              <Typography
+                sx={{
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: '#1F2937',
+                  mb: 1.5,
+                  fontFamily: 'Inter',
+                }}
+              >
+                Location <span style={{ color: '#EF4444' }}>*</span>
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Button
+                  startIcon={<MyLocation />}
+                  variant="contained"
+                  fullWidth
+                  sx={{
+                    background: '#1E40AF',
+                    color: 'white',
+                    textTransform: 'none',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    py: 1.5,
+                    borderRadius: 2,
+                    '&:hover': {
+                      background: '#1E3A8A',
+                    },
+                  }}
+                >
+                  Use My Location
                 </Button>
                 <Button
-                  type="submit"
-                  variant="contained"
-                  disabled={loading}
-                  sx={{ bgcolor: '#00796B', px: 4 }}
+                  startIcon={<Map />}
+                  variant="outlined"
+                  fullWidth
+                  sx={{
+                    borderColor: '#1E40AF',
+                    color: '#1E40AF',
+                    textTransform: 'none',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    py: 1.5,
+                    borderRadius: 2,
+                    '&:hover': {
+                      borderColor: '#1E3A8A',
+                      background: '#F0F9FF',
+                    },
+                  }}
                 >
-                  {loading ? 'Submitting...' : 'Submit Issue'}
+                  Pin on Map
                 </Button>
               </Box>
             </Box>
+
+            {/* Submit Button */}
+            <Button
+              onClick={handleSubmit}
+              variant="contained"
+              fullWidth
+              sx={{
+                background: '#1E40AF',
+                color: 'white',
+                textTransform: 'none',
+                fontSize: 16,
+                fontWeight: 600,
+                py: 1.8,
+                borderRadius: 2,
+                '&:hover': {
+                  background: '#1E3A8A',
+                },
+              }}
+            >
+              Submit Issue to CivikLink SL
+            </Button>
           </CardContent>
         </Card>
       </Container>

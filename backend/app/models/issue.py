@@ -15,24 +15,15 @@ class Issue:
     @staticmethod
     def create(data, user_id):
         """Create a new issue."""
-        # Convert coordinates to GeoJSON Point format
-        coordinates = data['location']['coordinates']
-        # Ensure order is [longitude, latitude] for GeoJSON
-        if len(coordinates) == 2:
-            # If input is [lat, lng], swap to [lng, lat] for GeoJSON
-            if coordinates[0] < 90 and coordinates[0] > -90:  # First value looks like latitude
-                coordinates = [coordinates[1], coordinates[0]]
-        
         issue_data = {
             'user_id': ObjectId(user_id),
             'title': data['title'],
             'description': data['description'],
             'category': data['category'],
-            'address': data['location']['address'],
-            'district': data['location']['district'],
             'location': {
-                'type': 'Point',
-                'coordinates': coordinates  # [lng, lat] for GeoJSON
+                'address': data['location']['address'],
+                'district': data['location']['district'],
+                'coordinates': data['location']['coordinates']  # [lat, lng]
             },
             'images': data.get('images', []),
             'tagged_ministries': data.get('tagged_ministries', []),
@@ -184,20 +175,13 @@ class Issue:
         if not issue:
             return None
         
-        # Reconstruct location for API response
-        location_response = {
-            'address': issue.get('address', ''),
-            'district': issue.get('district', ''),
-            'coordinates': issue.get('location', {}).get('coordinates', [])
-        }
-        
         return {
             'id': str(issue['_id']),
             'user_id': str(issue['user_id']),
             'title': issue['title'],
             'description': issue['description'],
             'category': issue['category'],
-            'location': location_response,
+            'location': issue['location'],
             'images': issue.get('images', []),
             'tagged_ministries': [str(m) for m in issue.get('tagged_ministries', [])],
             'verification_count': issue.get('verification_count', 0),
@@ -218,150 +202,11 @@ class Issue:
         """Search issues near a location."""
         query = filters or {}
         
-        # Add geospatial query using $nearSphere for GeoJSON
-        query['location'] = {
-            '$nearSphere': {
-                '$geometry': {
-                    'type': 'Point',
-                    'coordinates': [float(lng), float(lat)]  # [lng, lat] for GeoJSON
-                },
-                '$maxDistance': radius_km * 1000  # Convert km to meters
-            }
+        # Add geospatial query
+        query['location.coordinates'] = {
+            '$near': [float(lat), float(lng)],
+            '$maxDistance': radius_km / 111.12  # Convert km to degrees (approximate)
         }
         
         cursor = db.issues.find(query).limit(50)
         return [Issue.to_dict(issue) for issue in cursor]
-    
-    @staticmethod
-    def get_by_user(user_id, skip=0, limit=20):
-        """Get all issues reported by a specific user."""
-        try:
-            cursor = db.issues.find({'user_id': ObjectId(user_id)}) \
-                .sort('created_at', -1).skip(skip).limit(limit)
-            return [Issue.to_dict(issue) for issue in cursor]
-        except:
-            return []
-    
-    @staticmethod
-    def get_by_ministry(ministry_id, skip=0, limit=20):
-        """Get all issues tagged to a specific ministry."""
-        try:
-            cursor = db.issues.find({'tagged_ministries': ObjectId(ministry_id)}) \
-                .sort('created_at', -1).skip(skip).limit(limit)
-            return [Issue.to_dict(issue) for issue in cursor]
-        except:
-            return []
-    
-    @staticmethod
-    def get_by_ngo(ngo_id, skip=0, limit=20):
-        """Get all issues claimed by a specific NGO."""
-        try:
-            cursor = db.issues.find({'ngo_claim.ngo_id': ObjectId(ngo_id)}) \
-                .sort('created_at', -1).skip(skip).limit(limit)
-            return [Issue.to_dict(issue) for issue in cursor]
-        except:
-            return []
-    
-    @staticmethod
-    def update_status(issue_id, status):
-        """Update issue status."""
-        if status not in Issue.STATUSES:
-            return False
-        
-        try:
-            update_data = {
-                'status': status,
-                'updated_at': datetime.utcnow()
-            }
-            
-            # If status is verified, set verified_at timestamp
-            if status == 'verified':
-                update_data['verified_at'] = datetime.utcnow()
-            
-            result = db.issues.update_one(
-                {'_id': ObjectId(issue_id)},
-                {'$set': update_data}
-            )
-            return result.modified_count > 0
-        except:
-            return False
-    
-    @staticmethod
-    def verify_issue(issue_id, min_verifications=3):
-        """Auto-verify issue if it reaches minimum verifications."""
-        issue = Issue.find_by_id(issue_id)
-        if not issue:
-            return False
-        
-        if issue['verification_count'] >= min_verifications and issue['status'] == 'pending':
-            return Issue.update_status(issue_id, 'verified')
-        
-        return False
-    
-    @staticmethod
-    def set_crisis_mode(issue_id, is_crisis):
-        """Mark issue as crisis/emergency."""
-        try:
-            result = db.issues.update_one(
-                {'_id': ObjectId(issue_id)},
-                {
-                    '$set': {
-                        'is_crisis': is_crisis,
-                        'updated_at': datetime.utcnow()
-                    }
-                }
-            )
-            return result.modified_count > 0
-        except:
-            return False
-    
-    @staticmethod
-    def get_statistics(filters=None):
-        """Get issue statistics."""
-        query = filters or {}
-        
-        # Status breakdown
-        status_pipeline = [
-            {'$match': query},
-            {
-                '$group': {
-                    '_id': '$status',
-                    'count': {'$sum': 1}
-                }
-            }
-        ]
-        status_stats = list(db.issues.aggregate(status_pipeline))
-        
-        # Category breakdown
-        category_pipeline = [
-            {'$match': query},
-            {
-                '$group': {
-                    '_id': '$category',
-                    'count': {'$sum': 1}
-                }
-            }
-        ]
-        category_stats = list(db.issues.aggregate(category_pipeline))
-        
-        # Priority breakdown
-        priority_pipeline = [
-            {'$match': query},
-            {
-                '$group': {
-                    '_id': '$priority',
-                    'count': {'$sum': 1}
-                }
-            }
-        ]
-        priority_stats = list(db.issues.aggregate(priority_pipeline))
-        
-        return {
-            'total': db.issues.count_documents(query),
-            'by_status': {item['_id']: item['count'] for item in status_stats},
-            'by_category': {item['_id']: item['count'] for item in category_stats},
-            'by_priority': {item['_id']: item['count'] for item in priority_stats},
-            'crisis_mode': db.issues.count_documents({**query, 'is_crisis': True}),
-            'verified': db.issues.count_documents({**query, 'status': 'verified'}),
-            'solved': db.issues.count_documents({**query, 'status': 'solved'})
-        }

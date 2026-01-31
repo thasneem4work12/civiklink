@@ -177,12 +177,3 @@ def change_password():
 def logout():
     """Logout user (client should discard tokens)."""
     return jsonify({'message': 'Logout successful'}), 200
-
-@bp.route('/refresh', methods=['POST'])
-@jwt_required(refresh=True)
-def refresh():
-    """Refresh access token using refresh token."""
-    user_id = get_jwt_identity()
-    access_token = create_access_token(identity=user_id)
-    
-    return jsonify({'access_token': access_token}), 200

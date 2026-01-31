@@ -25,8 +25,11 @@ export default function Navbar() {
   };
 
   const handleLogout = () => {
+    handleClose();
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     dispatch(logout());
-    navigate('/login');
+    window.location.href = '/login';
   };
 
   const getDashboardRoute = () => {
@@ -84,7 +87,7 @@ export default function Navbar() {
           <MenuItem onClick={() => { handleClose(); navigate('/profile'); }}>
             {t('profile')}
           </MenuItem>
-          <MenuItem onClick={() => { handleClose(); handleLogout(); }}>
+          <MenuItem onClick={handleLogout}>
             {t('logout')}
           </MenuItem>
         </Menu>

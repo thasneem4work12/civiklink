@@ -1,320 +1,800 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { getIssues } from '../../redux/slices/issueSlice';
-import { logout } from '../../redux/slices/authSlice';
+import { useSelector } from 'react-redux';
 import {
   Box,
   Container,
   Typography,
   Grid,
   Card,
-  CardContent,
   Button,
   Chip,
   IconButton,
   Avatar,
-  CircularProgress,
+  Tab,
+  Tabs,
+  Badge,
+  Divider,
 } from '@mui/material';
 import {
-  Add,
+  Description,
   LocationOn,
+  Warning,
+  ThumbUp,
   CheckCircle,
-  Pending,
-  ExitToApp,
+  Info,
+  Notifications,
+  Settings,
+  Language,
 } from '@mui/icons-material';
-import { publicAPI } from '../../services/api';
-import toast from 'react-hot-toast';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { issues, loading } = useSelector((state) => state.issues);
-  
-  const [stats, setStats] = useState(null);
-  const [categories, setCategories] = useState([]);
+  const [activeTab, setActiveTab] = useState(0);
 
-  useEffect(() => {
-    // Fetch issues
-    dispatch(getIssues({ limit: 10 }));
-    
-    // Fetch stats
-    publicAPI.getStats()
-      .then(res => setStats(res.data))
-      .catch(err => console.error('Failed to fetch stats:', err));
-    
-    // Fetch categories
-    publicAPI.getCategories()
-      .then(res => setCategories(res.data.categories))
-      .catch(err => console.error('Failed to fetch categories:', err));
-  }, [dispatch]);
+  const myReports = [
+    {
+      id: 1,
+      title: 'Broken Street Light on Main Road',
+      description: 'Street light has been non-functional for 2 weeks causing safety concerns',
+      ministry: 'Ministry',
+      category: 'Infrastructure',
+      status: 'Pending',
+      likes: 12,
+      timeAgo: '5 days ago',
+    },
+    {
+      id: 2,
+      title: 'Pothole on Independence Avenue',
+      description: 'Large pothole causing vehicle damage, needs immediate attention',
+      ministry: 'NGO',
+      category: 'Roads',
+      status: 'Completed',
+      likes: 8,
+      timeAgo: '2 weeks ago',
+    },
+    {
+      id: 3,
+      title: 'Garbage Collection Delay',
+      description: 'Garbage not collected for 3 days in residential area',
+      ministry: 'Ministry',
+      category: 'Sanitation',
+      status: 'Pending',
+      likes: 15,
+      timeAgo: '1 day ago',
+    },
+  ];
 
-  const handleLogout = () => {
-    dispatch(logout());
-    toast.success('Logged out successfully');
-    navigate('/login');
+  const notifications = [
+    {
+      type: 'Official Reply',
+      message: 'Response to your light report',
+      timeAgo: '5 days ago',
+      icon: <CheckCircle sx={{ color: '#10B981' }} />,
+    },
+    {
+      type: 'Community Verification',
+      message: 'Your report was verified by 3 users',
+      timeAgo: '1 week ago',
+      icon: <CheckCircle sx={{ color: '#10B981' }} />,
+    },
+    {
+      type: 'Nearby Alerts',
+      message: 'Emergency reported in your area',
+      timeAgo: '2 days ago',
+      icon: <Info sx={{ color: '#F59E0B' }} />,
+    },
+  ];
+
+  const activityData = [
+    { name: 'Oct', value: 100 },
+    { name: 'Nov', value: 35 },
+    { name: 'Dec', value: 45 },
+    { name: 'Jan', value: 20 },
+  ];
+
+  const stats = {
+    totalReported: 128,
+    solved: 27,
+    pending: 40,
+    upvotes: 19,
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'pending': return '#F59E0B';
-      case 'verified': return '#3B82F6';
-      case 'in_progress': return '#8B5CF6';
-      case 'solved': return '#10B981';
-      default: return '#6B7280';
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return '#FEF3C7';
+      case 'completed':
+        return '#D1FAE5';
+      case 'in progress':
+        return '#DBEAFE';
+      default:
+        return '#F3F4F6';
+    }
+  };
+
+  const getStatusTextColor = (status) => {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return '#92400E';
+      case 'completed':
+        return '#065F46';
+      case 'in progress':
+        return '#1E40AF';
+      default:
+        return '#374151';
     }
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#F9FAFB' }}>
+    <Box sx={{ minHeight: '100vh', background: '#F9FAFB' }}>
       {/* Top Navigation */}
-      <Box sx={{ bgcolor: 'white', borderBottom: '1px solid #E5E7EB', py: 2, px: 4 }}>
-        <Container maxWidth="lg">
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: '#00796B' }}>
+      <Box
+        sx={{
+          background: 'white',
+          borderBottom: '1px solid #E5E7EB',
+          py: 1.5,
+          px: 4,
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            maxWidth: 1400,
+            mx: 'auto',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box
+              component="img"
+              src="/images/logo.png"
+              alt="CivikLink SL"
+              sx={{ width: 36, height: 36, objectFit: 'contain' }}
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+            <Typography
+              sx={{
+                fontFamily: 'Inter',
+                fontWeight: 700,
+                fontSize: 18,
+                color: '#1F2937',
+              }}
+            >
               CivikLink SL
             </Typography>
-            
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <Typography variant="body2" sx={{ color: '#6B7280' }}>
-                Welcome, {user?.full_name || user?.email}
-              </Typography>
-              <Chip 
-                label={user?.role} 
-                size="small" 
-                color="primary"
-                sx={{ textTransform: 'capitalize' }}
-              />
-              <IconButton onClick={handleLogout} size="small" title="Logout">
-                <ExitToApp />
-              </IconButton>
-            </Box>
           </Box>
-        </Container>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Typography
+              onClick={() => navigate('/home')}
+              sx={{
+                fontFamily: 'Inter',
+                fontSize: 14,
+                fontWeight: 600,
+                color: '#2563EB',
+                cursor: 'pointer',
+              }}
+            >
+              Dashboard
+            </Typography>
+            <Typography
+              onClick={() => navigate('/public-feed')}
+              sx={{
+                fontFamily: 'Inter',
+                fontSize: 14,
+                color: '#6B7280',
+                cursor: 'pointer',
+                '&:hover': { color: '#2563EB' },
+              }}
+            >
+              Public Feed
+            </Typography>
+            <Typography
+              onClick={() => navigate('/leaderboard')}
+              sx={{
+                fontFamily: 'Inter',
+                fontSize: 14,
+                color: '#6B7280',
+                cursor: 'pointer',
+                '&:hover': { color: '#2563EB' },
+              }}
+            >
+              Leaderboard
+            </Typography>
+            <Typography
+              onClick={() => navigate('/success-story')}
+              sx={{
+                fontFamily: 'Inter',
+                fontSize: 14,
+                color: '#6B7280',
+                cursor: 'pointer',
+                '&:hover': { color: '#2563EB' },
+              }}
+            >
+              Success story
+            </Typography>
+            <Typography
+              onClick={() => navigate('/analytics-report')}
+              sx={{
+                fontFamily: 'Inter',
+                fontSize: 14,
+                color: '#6B7280',
+                cursor: 'pointer',
+                '&:hover': { color: '#2563EB' },
+              }}
+            >
+              Analytics & report
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                px: 1.5,
+                py: 0.5,
+                borderRadius: 1.5,
+                background: '#EEF2FF',
+                cursor: 'pointer',
+              }}
+            >
+              <Language sx={{ fontSize: 18, color: '#2563EB' }} />
+              <Typography sx={{ fontSize: 13, fontWeight: 600, color: '#2563EB' }}>
+                EN
+              </Typography>
+            </Box>
+
+            <IconButton>
+              <Badge badgeContent={1} color="error">
+                <Notifications sx={{ color: '#6B7280' }} />
+              </Badge>
+            </IconButton>
+
+            <Avatar sx={{ width: 36, height: 36, cursor: 'pointer' }} />
+
+            <Button
+              variant="outlined"
+              onClick={() => navigate('/login')}
+              sx={{
+                textTransform: 'none',
+                fontFamily: 'Inter',
+                fontSize: 13,
+                fontWeight: 600,
+                color: '#DC2626',
+                borderColor: '#FEE2E2',
+                px: 2,
+                py: 0.75,
+                '&:hover': {
+                  borderColor: '#DC2626',
+                  background: '#FEF2F2',
+                },
+              }}
+            >
+              Log out
+            </Button>
+          </Box>
+        </Box>
       </Box>
 
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        {/* Quick Actions */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} md={user?.role === 'citizen' ? 12 : 6}>
-            {user?.role === 'citizen' && (
-              <Card sx={{ bgcolor: '#00796B', color: 'white' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Box>
-                      <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                        Report an Issue
-                      </Typography>
-                      <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                        Help improve your community by reporting problems
-                      </Typography>
-                    </Box>
-                    <Button
-                      variant="contained"
-                      startIcon={<Add />}
-                      onClick={() => navigate('/post-issue')}
-                      sx={{ bgcolor: 'white', color: '#00796B', '&:hover': { bgcolor: '#F0F0F0' } }}
-                    >
-                      Post Issue
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            )}
-            
-            {user?.role === 'government' && (
-              <Card>
-                <CardContent>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    onClick={() => navigate('/government')}
-                    sx={{ bgcolor: '#00796B', py: 2 }}
-                  >
-                    Go to Government Dashboard
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-            
-            {user?.role === 'ngo' && (
-              <Card>
-                <CardContent>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    onClick={() => navigate('/ngo')}
-                    sx={{ bgcolor: '#00796B', py: 2 }}
-                  >
-                    Go to NGO Dashboard
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-            
-            {user?.role === 'admin' && (
-              <Card>
-                <CardContent>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    onClick={() => navigate('/admin')}
-                    sx={{ bgcolor: '#00796B', py: 2 }}
-                  >
-                    Go to Admin Dashboard
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+      {/* Main Content */}
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        {/* Hero Section */}
+        <Box
+          sx={{
+            background: 'linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%)',
+            borderRadius: 4,
+            p: 4,
+            mb: 3,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Box>
+            <Typography
+              sx={{
+                fontFamily: 'Inter',
+                fontWeight: 800,
+                fontSize: 32,
+                color: '#1F2937',
+                mb: 1,
+              }}
+            >
+              Hello, {user?.full_name?.split(' ')[0] || 'Sarah'}!
+            </Typography>
+            <Typography
+              sx={{
+                fontFamily: 'Inter',
+                fontSize: 16,
+                color: '#374151',
+                mb: 0.5,
+              }}
+            >
+              Track your civic impact in real time.
+            </Typography>
+            <Typography
+              sx={{
+                fontFamily: 'Inter',
+                fontSize: 12,
+                color: '#9CA3AF',
+              }}
+            >
+              7m illustrated 3D civic image
+            </Typography>
+          </Box>
+
+          <Box
+            sx={{
+              width: 180,
+              height: 140,
+              background: 'rgba(255, 255, 255, 0.5)',
+              borderRadius: 3,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Typography sx={{ fontSize: 12, color: '#9CA3AF' }}>
+              Civic Building
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Action Cards */}
+        <Grid container spacing={2} sx={{ mb: 4 }}>
+          <Grid item xs={12} md={4}>
+            <Card
+              sx={{
+                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                borderRadius: 3,
+                p: 3,
+                cursor: 'pointer',
+                transition: 'transform 0.2s',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                },
+              }}
+              onClick={() => navigate('/issues/new')}
+            >
+              <Description sx={{ fontSize: 32, color: 'white', mb: 1 }} />
+              <Typography
+                sx={{
+                  fontFamily: 'Inter',
+                  fontWeight: 700,
+                  fontSize: 18,
+                  color: 'white',
+                  mb: 0.5,
+                }}
+              >
+                Report New Issue
+              </Typography>
+              <Typography sx={{ fontSize: 13, color: 'rgba(255,255,255,0.9)' }}>
+                Report your new issue
+              </Typography>
+            </Card>
           </Grid>
 
-          {user?.role === 'citizen' && (
-            <Grid item xs={12} md={4}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    onClick={() => navigate('/my-issues')}
-                    sx={{ py: 2 }}
-                  >
-                    My Issues
-                  </Button>
-                </CardContent>
-              </Card>
-            </Grid>
-          )}
+          <Grid item xs={12} md={4}>
+            <Card
+              onClick={() => navigate('/admin/panel')}
+              sx={{
+                background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+                borderRadius: 3,
+                p: 3,
+                cursor: 'pointer',
+                transition: 'transform 0.2s',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                },
+              }}
+            >
+              <LocationOn sx={{ fontSize: 32, color: 'white', mb: 1 }} />
+              <Typography
+                sx={{
+                  fontFamily: 'Inter',
+                  fontWeight: 700,
+                  fontSize: 18,
+                  color: 'white',
+                  mb: 0.5,
+                }}
+              >
+                View Nearby Issues
+              </Typography>
+              <Typography sx={{ fontSize: 13, color: 'rgba(255,255,255,0.9)' }}>
+                View nearby issues
+              </Typography>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Card
+              onClick={() => navigate('/government/crisis')}
+              sx={{
+                background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
+                borderRadius: 3,
+                p: 3,
+                cursor: 'pointer',
+                transition: 'transform 0.2s',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                },
+              }}
+            >
+              <Warning sx={{ fontSize: 32, color: 'white', mb: 1 }} />
+              <Typography
+                sx={{
+                  fontFamily: 'Inter',
+                  fontWeight: 700,
+                  fontSize: 18,
+                  color: 'white',
+                  mb: 0.5,
+                }}
+              >
+                Emergency Mode
+              </Typography>
+              <Typography sx={{ fontSize: 13, color: 'rgba(255,255,255,0.9)' }}>
+                Emergency mode if critical
+              </Typography>
+            </Card>
+          </Grid>
         </Grid>
 
-        {/* Platform Stats */}
-        {stats && (
-          <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={6} md={3}>
-              <Card>
-                <CardContent sx={{ textAlign: 'center' }}>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: '#00796B' }}>
-                    {stats.total_issues || 0}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Total Issues
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Card>
-                <CardContent sx={{ textAlign: 'center' }}>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: '#10B981' }}>
-                    {stats.solved_issues || 0}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Solved
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Card>
-                <CardContent sx={{ textAlign: 'center' }}>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: '#3B82F6' }}>
-                    {stats.active_users || 0}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Active Users
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Card>
-                <CardContent sx={{ textAlign: 'center' }}>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: '#F59E0B' }}>
-                    {stats.resolution_rate || 0}%
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Resolution Rate
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        )}
-
-        {/* Recent Issues */}
-        <Card>
-          <CardContent>
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
-              Recent Issues
-            </Typography>
-
-            {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                <CircularProgress />
-              </Box>
-            ) : issues.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <Typography variant="body1" color="text.secondary">
-                  No issues reported yet. Be the first to report an issue!
+        {/* Main Content Grid */}
+        <Grid container spacing={3}>
+          {/* Left Column - My Reports */}
+          <Grid item xs={12} lg={8}>
+            <Card sx={{ borderRadius: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+              <Box sx={{ p: 3, pb: 0 }}>
+                <Typography
+                  sx={{
+                    fontFamily: 'Inter',
+                    fontWeight: 700,
+                    fontSize: 20,
+                    color: '#1F2937',
+                    mb: 2,
+                  }}
+                >
+                  My Reports
                 </Typography>
+
+                <Tabs
+                  value={activeTab}
+                  onChange={handleTabChange}
+                  sx={{
+                    borderBottom: '1px solid #E5E7EB',
+                    '& .MuiTab-root': {
+                      textTransform: 'none',
+                      fontFamily: 'Inter',
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: '#6B7280',
+                      minWidth: 120,
+                    },
+                    '& .Mui-selected': {
+                      color: '#2563EB !important',
+                      fontWeight: 600,
+                    },
+                  }}
+                >
+                  <Tab label="Pending Issues" />
+                  <Tab label="Solved Issues" />
+                  <Tab label="Archived Issues" />
+                </Tabs>
               </Box>
-            ) : (
-              <Grid container spacing={2}>
-                {issues.map((issue) => (
-                  <Grid item xs={12} key={issue.id}>
-                    <Card 
-                      variant="outlined" 
-                      sx={{ 
-                        cursor: 'pointer',
-                        '&:hover': { bgcolor: '#F9FAFB' }
+
+              <Box sx={{ p: 3 }}>
+                {myReports.map((report) => (
+                  <Box
+                    key={report.id}
+                    onClick={() => navigate(`/issues/${report.id}`)}
+                    sx={{
+                      mb: 2,
+                      pb: 2,
+                      borderBottom: '1px solid #F3F4F6',
+                      '&:last-child': { borderBottom: 'none', mb: 0, pb: 0 },
+                      cursor: 'pointer',
+                      '&:hover': {
+                        background: '#F9FAFB',
+                        borderRadius: 2,
+                        p: 1.5,
+                        mx: -1.5,
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        mb: 1,
                       }}
-                      onClick={() => navigate(`/issues/${issue.id}`)}
                     >
-                      <CardContent>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                            {issue.title}
+                      <Typography
+                        sx={{
+                          fontFamily: 'Inter',
+                          fontWeight: 600,
+                          fontSize: 15,
+                          color: '#1F2937',
+                        }}
+                      >
+                        {report.title}
+                      </Typography>
+                      <Chip
+                        label={report.status}
+                        sx={{
+                          background: getStatusColor(report.status),
+                          color: getStatusTextColor(report.status),
+                          fontWeight: 600,
+                          fontSize: 11,
+                          height: 24,
+                          borderRadius: 1.5,
+                        }}
+                      />
+                    </Box>
+
+                    <Typography
+                      sx={{
+                        fontSize: 13,
+                        color: '#6B7280',
+                        mb: 1.5,
+                      }}
+                    >
+                      {report.description}
+                    </Typography>
+
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Chip
+                          label={report.ministry}
+                          sx={{
+                            background: '#DBEAFE',
+                            color: '#1E40AF',
+                            fontSize: 11,
+                            height: 22,
+                            fontWeight: 500,
+                          }}
+                        />
+                        <Chip
+                          label={report.category}
+                          sx={{
+                            background: '#F3F4F6',
+                            color: '#4B5563',
+                            fontSize: 11,
+                            height: 22,
+                            fontWeight: 500,
+                          }}
+                        />
+                      </Box>
+
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <ThumbUp sx={{ fontSize: 16, color: '#6B7280' }} />
+                          <Typography sx={{ fontSize: 12, color: '#6B7280' }}>
+                            {report.likes}
                           </Typography>
-                          <Chip
-                            label={issue.status}
-                            size="small"
-                            sx={{
-                              bgcolor: getStatusColor(issue.status),
-                              color: 'white',
-                              textTransform: 'capitalize',
-                            }}
-                          />
                         </Box>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                          {issue.description}
+                        <Typography sx={{ fontSize: 12, color: '#9CA3AF' }}>
+                          {report.timeAgo}
                         </Typography>
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                          <Chip label={issue.category} size="small" />
-                          {issue.location?.district && (
-                            <Chip
-                              icon={<LocationOn fontSize="small" />}
-                              label={issue.location.district}
-                              size="small"
-                              variant="outlined"
-                            />
-                          )}
-                          {issue.verification_count > 0 && (
-                            <Chip
-                              icon={<CheckCircle fontSize="small" />}
-                              label={`${issue.verification_count} verified`}
-                              size="small"
-                              color="success"
-                            />
-                          )}
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  </Grid>
+                      </Box>
+                    </Box>
+                  </Box>
                 ))}
-              </Grid>
-            )}
-          </CardContent>
-        </Card>
+              </Box>
+            </Card>
+          </Grid>
+
+          {/* Right Column - Notifications & Activity */}
+          <Grid item xs={12} lg={4}>
+            {/* Notifications */}
+            <Card sx={{ borderRadius: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', mb: 3 }}>
+              <Box
+                sx={{
+                  p: 2.5,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontFamily: 'Inter',
+                    fontWeight: 700,
+                    fontSize: 16,
+                    color: '#1F2937',
+                  }}
+                >
+                  Notifications
+                </Typography>
+                <IconButton size="small">
+                  <Settings sx={{ fontSize: 18, color: '#9CA3AF' }} />
+                </IconButton>
+              </Box>
+
+              <Divider />
+
+              <Box sx={{ p: 2 }}>
+                {notifications.map((notif, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      display: 'flex',
+                      gap: 1.5,
+                      mb: 2,
+                      '&:last-child': { mb: 0 },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: '50%',
+                        background: '#F9FAFB',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {notif.icon}
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography
+                        sx={{
+                          fontFamily: 'Inter',
+                          fontWeight: 600,
+                          fontSize: 13,
+                          color: '#1F2937',
+                          mb: 0.25,
+                        }}
+                      >
+                        {notif.type}
+                      </Typography>
+                      <Typography sx={{ fontSize: 12, color: '#6B7280', mb: 0.5 }}>
+                        {notif.message}
+                      </Typography>
+                      <Typography sx={{ fontSize: 11, color: '#9CA3AF' }}>
+                        {notif.timeAgo}
+                      </Typography>
+                    </Box>
+                  </Box>
+                ))}
+
+                <Button
+                  fullWidth
+                  sx={{
+                    mt: 2,
+                    textTransform: 'none',
+                    color: '#2563EB',
+                    fontWeight: 600,
+                    fontSize: 13,
+                  }}
+                >
+                  View all
+                </Button>
+              </Box>
+            </Card>
+
+            {/* Activity Summary */}
+            <Card sx={{ borderRadius: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+              <Box sx={{ p: 2.5 }}>
+                <Typography
+                  sx={{
+                    fontFamily: 'Inter',
+                    fontWeight: 700,
+                    fontSize: 16,
+                    color: '#1F2937',
+                    mb: 2,
+                  }}
+                >
+                  Activity Summary
+                </Typography>
+
+                <Grid container spacing={2} sx={{ mb: 3 }}>
+                  <Grid item xs={6}>
+                    <Box>
+                      <Typography sx={{ fontSize: 12, color: '#6B7280', mb: 0.5 }}>
+                        Total Reported
+                      </Typography>
+                      <Typography
+                        sx={{
+                          fontWeight: 700,
+                          fontSize: 24,
+                          color: '#1F2937',
+                        }}
+                      >
+                        {stats.totalReported}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Box>
+                      <Typography sx={{ fontSize: 12, color: '#6B7280', mb: 0.5 }}>
+                        Solved
+                      </Typography>
+                      <Typography
+                        sx={{
+                          fontWeight: 700,
+                          fontSize: 24,
+                          color: '#10B981',
+                        }}
+                      >
+                        {stats.solved}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Box>
+                      <Typography sx={{ fontSize: 12, color: '#6B7280', mb: 0.5 }}>
+                        Pending
+                      </Typography>
+                      <Typography
+                        sx={{
+                          fontWeight: 700,
+                          fontSize: 24,
+                          color: '#F59E0B',
+                        }}
+                      >
+                        {stats.pending}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Box>
+                      <Typography sx={{ fontSize: 12, color: '#6B7280', mb: 0.5 }}>
+                        Upvotes
+                      </Typography>
+                      <Typography
+                        sx={{
+                          fontWeight: 700,
+                          fontSize: 24,
+                          color: '#3B82F6',
+                        }}
+                      >
+                        {stats.upvotes}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+
+                <ResponsiveContainer width="100%" height={150}>
+                  <BarChart data={activityData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 11, fill: '#9CA3AF' }}
+                      axisLine={{ stroke: '#E5E7EB' }}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 11, fill: '#9CA3AF' }}
+                      axisLine={{ stroke: '#E5E7EB' }}
+                    />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="#3B82F6" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Box>
+            </Card>
+          </Grid>
+        </Grid>
       </Container>
     </Box>
   );

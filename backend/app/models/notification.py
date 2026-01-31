@@ -108,15 +108,3 @@ class Notification:
             'read': notification.get('read', False),
             'created_at': notification['created_at'].isoformat()
         }
-    
-    @staticmethod
-    def delete_all_read(user_id):
-        """Delete all read notifications for a user."""
-        try:
-            result = db.notifications.delete_many({
-                'user_id': ObjectId(user_id),
-                'read': True
-            })
-            return result.deleted_count
-        except:
-            return 0
