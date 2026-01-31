@@ -10,7 +10,7 @@ git remote add origin https://github.com/YOUR_USERNAME/civiklink.git
 
 # Push code to GitHub
 git branch -M main
-git push -u origin main
+git push -u origin main dd
 ```
 
 ### Example:
