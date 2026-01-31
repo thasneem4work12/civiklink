@@ -27,6 +27,7 @@ import GovDashboard from './pages/Government/GovDashboard';
 import CrisisDashboard from './pages/Government/CrisisDashboard';
 import NGODashboard from './pages/NGO/NGODashboard';
 import AdminDashboard from './pages/Admin/AdminDashboard';
+import AdminDashboardPage from './pages/Admin/AdminDashboardPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -195,6 +196,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/panel"
+            element={
+              <ProtectedRoute>
+                <AdminDashboardPage />
               </ProtectedRoute>
             }
           />

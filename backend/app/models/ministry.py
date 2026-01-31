@@ -123,3 +123,77 @@ class Ministry:
             'performance_stats': ministry.get('performance_stats', {}),
             'created_at': ministry['created_at'].isoformat()
         }
+    
+    @staticmethod
+    def get_performance_stats(ministry_id):
+        """Get detailed performance statistics for a ministry."""
+        ministry = Ministry.find_by_id(ministry_id)
+        if not ministry:
+            return None
+        
+        # Get issues tagged to this ministry
+        total_issues = db.issues.count_documents({'tagged_ministries': ObjectId(ministry_id)})
+        solved = db.issues.count_documents({'tagged_ministries': ObjectId(ministry_id), 'status': 'solved'})
+        in_progress = db.issues.count_documents({'tagged_ministries': ObjectId(ministry_id), 'status': 'in_progress'})
+        pending = db.issues.count_documents({'tagged_ministries': ObjectId(ministry_id), 'status': {'$in': ['pending', 'verified']}})
+        
+        # Calculate avg response time
+        pipeline = [
+            {'$match': {
+                'tagged_ministries': ObjectId(ministry_id),
+                'government_response': {'$exists': True}
+            }},
+            {'$project': {
+                'response_time': {
+                    '$subtract': ['$government_response.responded_at', '$created_at']
+                }
+            }},
+            {'$group': {
+                '_id': None,
+                'avg_response_time': {'$avg': '$response_time'}
+            }}
+        ]
+        
+        response_time_result = list(db.issues.aggregate(pipeline))
+        avg_response_time_ms = response_time_result[0]['avg_response_time'] if response_time_result else 0
+        avg_response_time_hours = avg_response_time_ms / (1000 * 60 * 60) if avg_response_time_ms else 0
+        
+        return {
+            'ministry_id': str(ministry_id),
+            'ministry_name': ministry['name_en'],
+            'total_issues': total_issues,
+            'solved': solved,
+            'in_progress': in_progress,
+            'pending': pending,
+            'avg_response_time_hours': round(avg_response_time_hours, 2),
+            'resolution_rate': round((solved / total_issues * 100) if total_issues > 0 else 0, 2)
+        }
+    
+    @staticmethod
+    def add_officer(ministry_id, user_id):
+        """Assign an officer/user to a ministry."""
+        try:
+            result = db.ministries.update_one(
+                {'_id': ObjectId(ministry_id)},
+                {'$addToSet': {'assigned_users': ObjectId(user_id)}}
+            )
+            return result.modified_count > 0
+        except:
+            return False
+    
+    @staticmethod
+    def remove_officer(ministry_id, user_id):
+        """Remove an officer/user from a ministry."""
+        try:
+            result = db.ministries.update_one(
+                {'_id': ObjectId(ministry_id)},
+                {'$pull': {'assigned_users': ObjectId(user_id)}}
+            )
+            return result.modified_count > 0
+        except:
+            return False
+    
+    @staticmethod
+    def count():
+        """Count total ministries."""
+        return db.ministries.count_documents({})

@@ -1,7 +1,7 @@
 """
 User model and helper functions.
 """
-from datetime import datetime
+from datetime import datetime, timedelta
 from bson import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
@@ -114,3 +114,102 @@ class User:
         """Count users with optional filters."""
         query = filters or {}
         return db.users.count_documents(query)
+    
+    @staticmethod
+    def get_by_role(role, skip=0, limit=20):
+        """Get users by role."""
+        cursor = db.users.find({'role': role}).skip(skip).limit(limit)
+        return [User.to_dict(user) for user in cursor]
+    
+    @staticmethod
+    def get_statistics():
+        """Get user statistics by role and status."""
+        pipeline = [
+            {
+                '$group': {
+                    '_id': '$role',
+                    'count': {'$sum': 1},
+                    'active': {
+                        '$sum': {'$cond': [{'$eq': ['$status', 'active']}, 1, 0]}
+                    },
+                    'suspended': {
+                        '$sum': {'$cond': [{'$eq': ['$status', 'suspended']}, 1, 0]}
+                    },
+                    'verified': {
+                        '$sum': {'$cond': ['$verified', 1, 0]}
+                    }
+                }
+            }
+        ]
+        
+        result = list(db.users.aggregate(pipeline))
+        
+        stats = {
+            'total': db.users.count_documents({}),
+            'by_role': {item['_id']: item for item in result},
+            'new_this_week': db.users.count_documents({
+                'created_at': {'$gte': datetime.utcnow().replace(hour=0, minute=0, second=0) - timedelta(days=7)}
+            }),
+            'verified_users': db.users.count_documents({'verified': True}),
+            'pending_verification': db.users.count_documents({'verified': False})
+        }
+        
+        return stats
+    
+    @staticmethod
+    def verify_user(user_id):
+        """Verify a user's identity."""
+        try:
+            result = db.users.update_one(
+                {'_id': ObjectId(user_id)},
+                {'$set': {'verified': True}}
+            )
+            return result.modified_count > 0
+        except:
+            return False
+    
+    @staticmethod
+    def block_user(user_id, reason=None):
+        """Block/suspend a user."""
+        try:
+            update_data = {
+                'status': 'suspended',
+                'suspended_at': datetime.utcnow()
+            }
+            if reason:
+                update_data['suspension_reason'] = reason
+            
+            result = db.users.update_one(
+                {'_id': ObjectId(user_id)},
+                {'$set': update_data}
+            )
+            return result.modified_count > 0
+        except:
+            return False
+    
+    @staticmethod
+    def unblock_user(user_id):
+        """Unblock/reactivate a user."""
+        try:
+            result = db.users.update_one(
+                {'_id': ObjectId(user_id)},
+                {
+                    '$set': {'status': 'active'},
+                    '$unset': {'suspended_at': '', 'suspension_reason': ''}
+                }
+            )
+            return result.modified_count > 0
+        except:
+            return False
+    
+    @staticmethod
+    def delete(user_id):
+        """Delete a user (soft delete by changing status)."""
+        try:
+            result = db.users.update_one(
+                {'_id': ObjectId(user_id)},
+                {'$set': {'status': 'deleted', 'deleted_at': datetime.utcnow()}}
+            )
+            return result.modified_count > 0
+        except:
+            return False

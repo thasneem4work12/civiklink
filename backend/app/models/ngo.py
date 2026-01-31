@@ -148,3 +148,51 @@ class NGO:
             'performance_stats': ngo.get('performance_stats', {}),
             'created_at': ngo['created_at'].isoformat()
         }
+    
+    @staticmethod
+    def get_activity(ngo_id):
+        """Get activity feed for an NGO."""
+        from app.models.issue import Issue
+        
+        # Get all claimed issues
+        claimed_issues = Issue.get_by_ngo(ngo_id, limit=50)
+        
+        activities = []
+        for issue in claimed_issues:
+            activities.append({
+                'type': 'claim',
+                'issue_id': issue['id'],
+                'issue_title': issue['title'],
+                'status': issue['status'],
+                'timestamp': issue.get('ngo_claim', {}).get('claimed_at'),
+                'category': issue['category']
+            })
+        
+        # Sort by timestamp
+        activities.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+        
+        return activities
+    
+    @staticmethod
+    def add_admin(ngo_id, user_id):
+        """Add admin user to NGO."""
+        try:
+            result = db.ngos.update_one(
+                {'_id': ObjectId(ngo_id)},
+                {'$addToSet': {'admin_users': ObjectId(user_id)}}
+            )
+            return result.modified_count > 0
+        except:
+            return False
+    
+    @staticmethod
+    def remove_admin(ngo_id, user_id):
+        """Remove admin user from NGO."""
+        try:
+            result = db.ngos.update_one(
+                {'_id': ObjectId(ngo_id)},
+                {'$pull': {'admin_users': ObjectId(user_id)}}
+            )
+            return result.modified_count > 0
+        except:
+            return False

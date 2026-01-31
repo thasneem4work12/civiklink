@@ -89,7 +89,8 @@ def _create_indexes():
         
         # Issues indexes
         try:
-            db.issues.create_index([('location.coordinates', GEO2D)])
+            # Use 2dsphere for GeoJSON format
+            db.issues.create_index([('location', '2dsphere')])
         except OperationFailure:
             pass
         

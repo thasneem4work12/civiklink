@@ -71,3 +71,51 @@ def sanitize_input(text):
     text = ' '.join(text.split())
     
     return text.strip()
+
+def validate_file_extension(filename, allowed_extensions):
+    """Validate file extension."""
+    if not filename or '.' not in filename:
+        return False
+    
+    extension = filename.rsplit('.', 1)[1].lower()
+    return extension in allowed_extensions
+
+def validate_image_file(filename):
+    """Validate image file extension."""
+    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+    return validate_file_extension(filename, allowed_extensions)
+
+def validate_url(url):
+    """Validate URL format."""
+    pattern = r'^https?://[\w\-\.]+\.\w{2,}(/.*)?$'
+    return re.match(pattern, url) is not None
+
+def validate_category(category):
+    """Validate issue category."""
+    valid_categories = ['water', 'electricity', 'road', 'flood', 'waste', 'other']
+    return category in valid_categories
+
+def validate_district(district):
+    """Validate Sri Lankan district."""
+    valid_districts = [
+        "Colombo", "Gampaha", "Kalutara",
+        "Kandy", "Matale", "Nuwara Eliya",
+        "Galle", "Matara", "Hambantota",
+        "Jaffna", "Kilinochchi", "Mannar", "Vavuniya", "Mullaitivu",
+        "Batticaloa", "Ampara", "Trincomalee",
+        "Kurunegala", "Puttalam",
+        "Anuradhapura", "Polonnaruwa",
+        "Badulla", "Monaragala",
+        "Ratnapura", "Kegalle"
+    ]
+    return district in valid_districts
+
+def validate_status(status):
+    """Validate issue status."""
+    valid_statuses = ['pending', 'verified', 'in_progress', 'solved', 'rejected']
+    return status in valid_statuses
+
+def validate_priority(priority):
+    """Validate issue priority."""
+    valid_priorities = ['low', 'medium', 'high', 'critical']
+    return priority in valid_priorities
