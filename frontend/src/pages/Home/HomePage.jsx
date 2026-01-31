@@ -419,6 +419,7 @@ export default function HomePage() {
 
           <Grid item xs={12} md={4}>
             <Card
+              onClick={() => navigate('/government/crisis')}
               sx={{
                 background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
                 borderRadius: 3,
@@ -496,11 +497,19 @@ export default function HomePage() {
                 {myReports.map((report) => (
                   <Box
                     key={report.id}
+                    onClick={() => navigate(`/issues/${report.id}`)}
                     sx={{
                       mb: 2,
                       pb: 2,
                       borderBottom: '1px solid #F3F4F6',
                       '&:last-child': { borderBottom: 'none', mb: 0, pb: 0 },
+                      cursor: 'pointer',
+                      '&:hover': {
+                        background: '#F9FAFB',
+                        borderRadius: 2,
+                        p: 1.5,
+                        mx: -1.5,
+                      },
                     }}
                   >
                     <Box

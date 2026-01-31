@@ -20,8 +20,11 @@ import AnalyticsReportPage from './pages/Analytics/AnalyticsReportPage';
 import PostIssuePage from './pages/Issues/PostIssuePage';
 import MyIssuesPage from './pages/Issues/MyIssuesPage';
 import IssueDetailPage from './pages/Issues/IssueDetailPage';
+import IssueVerificationPage from './pages/Issues/IssueVerificationPage';
+import MinistryActionPage from './pages/Issues/MinistryActionPage';
 import ProfilePage from './pages/Profile/ProfilePage';
 import GovDashboard from './pages/Government/GovDashboard';
+import CrisisDashboard from './pages/Government/CrisisDashboard';
 import NGODashboard from './pages/NGO/NGODashboard';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 
@@ -140,6 +143,22 @@ function App() {
             }
           />
           <Route
+            path="/issues/:id/verify"
+            element={
+              <ProtectedRoute>
+                <IssueVerificationPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/issues/:id/ministry-action"
+            element={
+              <ProtectedRoute>
+                <MinistryActionPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/profile"
             element={
               <ProtectedRoute>
@@ -156,9 +175,17 @@ function App() {
             }
           />
           <Route
+            path="/government/crisis"
+            element={
+              <ProtectedRoute>
+                <CrisisDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/ngo"
             element={
-              <ProtectedRoute allowedRoles={['ngo', 'admin']}>
+              <ProtectedRoute>
                 <NGODashboard />
               </ProtectedRoute>
             }
