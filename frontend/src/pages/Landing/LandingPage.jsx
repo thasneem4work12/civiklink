@@ -14,6 +14,9 @@ import FacebookIcon from '@mui/icons-material/Facebook';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import SensorsIcon from '@mui/icons-material/Sensors';
+import MapIcon from '@mui/icons-material/Map';
+import MyLocationIcon from '@mui/icons-material/MyLocation';
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -23,7 +26,7 @@ export default function LandingPage() {
       sx={{
         width: '100%',
         minHeight: '100vh',
-        background: 'linear-gradient(45deg, #E0F2F1 50%, #B2DFDB 67.68%, #80CBC4 85.36%, #4DB6AC 120.71%)',
+        background: 'linear-gradient(135deg, #E0F2F1 0%, #B2DFDB 100%)',
         position: 'relative',
       }}
     >
@@ -130,17 +133,18 @@ export default function LandingPage() {
           <Button
             variant="contained"
             sx={{
-              width: 155,
+              width: 180,
               height: 36,
               background: 'linear-gradient(45deg, #26A69A 50%, #66BB6A 120.71%)',
               boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1), 0px 10px 15px rgba(0, 0, 0, 0.1)',
               borderRadius: '9999px',
               fontFamily: 'Inter',
               fontWeight: 600,
-              fontSize: 12,
+              fontSize: 11,
               letterSpacing: '-0.5px',
               color: '#FFFFFF',
               textTransform: 'none',
+              whiteSpace: 'nowrap',
               '&:hover': {
                 background: 'linear-gradient(45deg, #22948A 50%, #5CAF5A 120.71%)',
               },
@@ -156,30 +160,32 @@ export default function LandingPage() {
       <Box component="main" sx={{ position: 'relative', pt: '72px' }}>
         <Container maxWidth="xl" sx={{ position: 'relative' }}>
           {/* Hero Section */}
-          <Box sx={{ display: 'flex', gap: 4.5, pt: 4.5, pb: 6, alignItems: 'flex-start' }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: { xs: 6, lg: 4.5 }, pt: 4.5, pb: 6, alignItems: { xs: 'center', lg: 'flex-start' } }}>
             {/* Left Column - Text Content */}
-            <Box sx={{ width: '40%' }}>
+            <Box sx={{ width: { xs: '100%', lg: '38%' }, textAlign: { xs: 'center', lg: 'left' } }}>
               {/* Living Map Badge */}
               <Box
                 sx={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 1.2,
-                  px: 1.5,
-                  py: 0.9,
-                  background: 'rgba(255, 255, 255, 0.5)',
+                  px: 1.8,
+                  py: 1,
+                  background: 'rgba(255, 255, 255, 0.7)',
+                  backdropFilter: 'blur(8px)',
                   borderRadius: '9999px',
+                  border: '1px solid rgba(255, 255, 255, 0.5)',
                   mb: 3,
                   mt: 6,
                 }}
               >
-                <LocationOnIcon sx={{ color: '#0D9488', fontSize: 14 }} />
+                <MapIcon sx={{ color: '#0D9488', fontSize: 16 }} />
                 <Typography
                   sx={{
                     fontFamily: 'Inter',
                     fontWeight: 600,
-                    fontSize: 11,
-                    letterSpacing: '-0.5px',
+                    fontSize: 12,
+                    letterSpacing: '-0.02em',
                     color: '#374151',
                   }}
                 >
@@ -192,17 +198,19 @@ export default function LandingPage() {
                 variant="h1"
                 sx={{
                   fontFamily: 'Inter',
-                  fontWeight: 700,
-                  fontSize: 45,
-                  lineHeight: '56px',
-                  letterSpacing: '-0.5px',
+                  fontWeight: 800,
+                  fontSize: 56,
+                  lineHeight: '68px',
+                  letterSpacing: '-0.04em',
                   color: '#111827',
                   mb: 2.2,
                 }}
               >
                 Your Voice.<br />
                 Real Impact.<br />
-                A Better Sri Lanka.
+                <Box component="span" sx={{ color: '#0D9488' }}>
+                  A Better Sri Lanka.
+                </Box>
               </Typography>
 
               {/* Description */}
@@ -221,24 +229,23 @@ export default function LandingPage() {
               </Typography>
 
               {/* Buttons */}
-              <Box sx={{ display: 'flex', gap: 1.5 }}>
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: { xs: 'center', lg: 'flex-start' }, flexWrap: 'wrap' }}>
                 <Button
                   variant="contained"
-                  startIcon={<LocationOnIcon />}
+                  startIcon={<MyLocationIcon />}
                   sx={{
-                    width: 175,
-                    height: 42,
-                    background: 'linear-gradient(45deg, #26A69A 50%, #66BB6A 120.71%)',
-                    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1), 0px 10px 15px rgba(0, 0, 0, 0.1)',
-                    borderRadius: '9999px',
+                    minWidth: { xs: '100%', sm: 200 },
+                    height: 52,
+                    background: 'linear-gradient(135deg, #26A69A 0%, #0D9488 100%)',
+                    boxShadow: '0 10px 15px -3px rgba(13, 148, 136, 0.3)',
+                    borderRadius: '16px',
                     fontFamily: 'Inter',
-                    fontWeight: 600,
-                    fontSize: 12,
-                    letterSpacing: '-0.5px',
+                    fontWeight: 700,
+                    fontSize: 14,
                     color: '#FFFFFF',
                     textTransform: 'none',
                     '&:hover': {
-                      background: 'linear-gradient(45deg, #22948A 50%, #5CAF5A 120.71%)',
+                      background: 'linear-gradient(135deg, #22948A 0%, #0B7A6F 100%)',
                     },
                   }}
                   onClick={() => navigate('/register')}
@@ -247,22 +254,23 @@ export default function LandingPage() {
                 </Button>
 
                 <Button
-                  variant="outlined"
+                  variant="contained"
                   sx={{
-                    width: 150,
-                    height: 45,
+                    minWidth: { xs: '100%', sm: 160 },
+                    height: 52,
                     background: 'rgba(255, 255, 255, 0.6)',
-                    border: '2px solid #D1D5DB',
-                    borderRadius: '9999px',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.4)',
+                    borderRadius: '16px',
                     fontFamily: 'Inter',
-                    fontWeight: 600,
-                    fontSize: 12,
-                    letterSpacing: '-0.5px',
+                    fontWeight: 700,
+                    fontSize: 14,
                     color: '#1F2937',
                     textTransform: 'none',
+                    boxShadow: 'none',
                     '&:hover': {
                       background: 'rgba(255, 255, 255, 0.8)',
-                      border: '2px solid #D1D5DB',
+                      boxShadow: 'none',
                     },
                   }}
                   onClick={() => navigate('/home')}
@@ -273,49 +281,54 @@ export default function LandingPage() {
             </Box>
 
             {/* Center Column - Map Visualization */}
-            <Box sx={{ width: '30%', position: 'relative', height: 375, mt: 6 }}>
+            <Box sx={{ width: { xs: '100%', lg: '30%' }, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Box
                 sx={{
                   width: '100%',
-                  height: 328,
+                  height: 300,
                   position: 'relative',
-                  borderRadius: '22px',
-                  overflow: 'hidden',
-                  boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
                 <Box
                   component="img"
-                  src="/images/sri-lanka-map.png"
+                  src="/images/srilanka_map_design.png"
                   alt="Sri Lanka Map"
                   sx={{
                     width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
+                    height: 'auto',
+                    objectFit: 'contain',
+                    filter: 'drop-shadow(0 15px 30px rgba(0,0,0,0.12))',
                   }}
                   onError={(e) => {
-                    e.target.parentElement.style.background = 'linear-gradient(135deg, #A5D6D5 0%, #80CBC4 50%, #4DB6AC 100%)';
                     e.target.style.display = 'none';
+                    e.target.parentElement.style.background = 'radial-gradient(circle, #FDE68A 0%, #F59E0B 100%)';
+                    e.target.parentElement.style.borderRadius = '24px';
+                    e.target.parentElement.style.minHeight = '300px';
                   }}
                 />
-                {/* Map Markers */}
+
+                {/* Map Floating Badges - Design Matched */}
                 <Box
                   sx={{
                     position: 'absolute',
-                    top: '20%',
-                    left: '30%',
+                    top: '8%',
+                    left: '-5%',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: 0.8,
-                    px: 1.2,
-                    py: 0.8,
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    boxShadow: '0px 3px 5px rgba(0, 0, 0, 0.1), 0px 8px 12px rgba(0, 0, 0, 0.1)',
-                    borderRadius: '9999px',
+                    gap: 1.2,
+                    px: 2.2,
+                    py: 1.2,
+                    background: '#FFFFFF',
+                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
+                    borderRadius: '30px',
+                    zIndex: 2,
                   }}
                 >
-                  <FlashOnIcon sx={{ color: '#EAB308', fontSize: 11 }} />
-                  <Typography sx={{ fontFamily: 'Inter', fontWeight: 600, fontSize: 9, color: '#374151' }}>
+                  <FlashOnIcon sx={{ color: '#FACC15', fontSize: 20 }} />
+                  <Typography sx={{ fontFamily: 'Inter', fontWeight: 700, fontSize: 13, color: '#1F2937' }}>
                     Power
                   </Typography>
                 </Box>
@@ -323,20 +336,21 @@ export default function LandingPage() {
                 <Box
                   sx={{
                     position: 'absolute',
-                    top: '45%',
-                    right: '15%',
+                    top: '42%',
+                    right: '-8%',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: 0.8,
-                    px: 1.2,
-                    py: 0.8,
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    boxShadow: '0px 3px 5px rgba(0, 0, 0, 0.1), 0px 8px 12px rgba(0, 0, 0, 0.1)',
-                    borderRadius: '9999px',
+                    gap: 1.2,
+                    px: 2.2,
+                    py: 1.2,
+                    background: '#FFFFFF',
+                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
+                    borderRadius: '30px',
+                    zIndex: 2,
                   }}
                 >
-                  <WaterDropIcon sx={{ color: '#3B82F6', fontSize: 9 }} />
-                  <Typography sx={{ fontFamily: 'Inter', fontWeight: 600, fontSize: 9, color: '#374151' }}>
+                  <WaterDropIcon sx={{ color: '#3B82F6', fontSize: 20 }} />
+                  <Typography sx={{ fontFamily: 'Inter', fontWeight: 700, fontSize: 13, color: '#1F2937' }}>
                     Water
                   </Typography>
                 </Box>
@@ -344,61 +358,68 @@ export default function LandingPage() {
                 <Box
                   sx={{
                     position: 'absolute',
-                    bottom: '25%',
-                    left: '35%',
+                    bottom: '5%',
+                    left: '0%',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: 0.8,
-                    px: 1.2,
-                    py: 0.8,
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    boxShadow: '0px 3px 5px rgba(0, 0, 0, 0.1), 0px 8px 12px rgba(0, 0, 0, 0.1)',
-                    borderRadius: '9999px',
+                    gap: 1.2,
+                    px: 2.2,
+                    py: 1.2,
+                    background: '#FFFFFF',
+                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
+                    borderRadius: '30px',
+                    zIndex: 2,
                   }}
                 >
-                  <DirectionsCarIcon sx={{ color: '#F97316', fontSize: 14 }} />
-                  <Typography sx={{ fontFamily: 'Inter', fontWeight: 600, fontSize: 9, color: '#374151' }}>
+                  <DirectionsCarIcon sx={{ color: '#F97316', fontSize: 20 }} />
+                  <Typography sx={{ fontFamily: 'Inter', fontWeight: 700, fontSize: 13, color: '#1F2937' }}>
                     Roads
                   </Typography>
                 </Box>
 
-                {/* Dot indicators */}
-                <Box sx={{ position: 'absolute', top: '35%', left: '57%', width: 9, height: 9, background: '#FACC15', opacity: 0.96, borderRadius: '50%' }} />
-                <Box sx={{ position: 'absolute', top: '55%', left: '45%', width: 9, height: 9, background: '#4ADE80', opacity: 0.97, borderRadius: '50%' }} />
-                <Box sx={{ position: 'absolute', top: '58%', right: '33%', width: 9, height: 9, background: '#FB923C', opacity: 0.98, borderRadius: '50%' }} />
+                {/* Hotspot Dots */}
+                <Box sx={{ position: 'absolute', top: '35%', left: '55%', width: 10, height: 10, bgcolor: '#FACC15', borderRadius: '50%', boxShadow: '0 0 10px #FACC15' }} />
+                <Box sx={{ position: 'absolute', top: '55%', left: '42%', width: 10, height: 10, bgcolor: '#4ADE80', borderRadius: '50%', boxShadow: '0 0 10px #4ADE80' }} />
+                <Box sx={{ position: 'absolute', bottom: '40%', right: '35%', width: 10, height: 10, bgcolor: '#FB923C', borderRadius: '50%', boxShadow: '0 0 10px #FB923C' }} />
               </Box>
             </Box>
 
             {/* Right Column - Happening Now */}
             <Box
               sx={{
-                width: '30%',
-                minHeight: 450,
-                background: 'rgba(255, 255, 255, 0.3)',
-                border: '1px solid rgba(255, 255, 255, 0.4)',
-                boxShadow: '0px 6px 8px rgba(0, 0, 0, 0.1), 0px 15px 19px rgba(0, 0, 0, 0.1)',
-                borderRadius: '18px',
-                p: 2.2,
+                width: { xs: '100%', lg: '32%' },
+                minHeight: 500,
+                background: 'rgba(255, 255, 255, 0.25)',
+                backdropFilter: 'blur(30px)',
+                WebkitBackdropFilter: 'blur(30px)',
+                border: '1px solid rgba(255, 255, 255, 0.45)',
+                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
+                borderRadius: '35px',
+                p: 3,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2.5,
               }}
             >
               {/* Header */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mb: 2.2 }}>
-                <LocationOnIcon sx={{ color: '#0D9488', fontSize: 15 }} />
+              <Box sx={{ mb: 1 }}>
+                <SensorsIcon sx={{ color: '#0D9488', fontSize: 24, mb: 0.5 }} />
                 <Typography
                   sx={{
                     fontFamily: 'Inter',
-                    fontWeight: 700,
-                    fontSize: 15,
-                    letterSpacing: '-0.5px',
-                    color: '#1F2937',
+                    fontWeight: 800,
+                    fontSize: 20,
+                    lineHeight: '28px',
+                    letterSpacing: '-0.02em',
+                    color: '#111827',
                   }}
                 >
-                  Happening Now
+                  Happening Now Across the Island
                 </Typography>
               </Box>
 
               {/* Issues List */}
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                 {[
                   { title: 'Road Damage', location: 'Colombo 07', image: '/images/road-damage.jpg' },
                   { title: 'Street Light Out', location: 'Kandy', image: '/images/street-light.jpg' },
@@ -407,55 +428,64 @@ export default function LandingPage() {
                   <Card
                     key={index}
                     sx={{
-                      background: 'rgba(255, 255, 255, 0.7)',
-                      borderRadius: '12px',
-                      overflow: 'hidden',
+                      background: '#FFFFFF',
+                      borderRadius: '24px',
+                      boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+                      p: 1.8,
+                      border: 'none',
                     }}
                   >
                     {/* Image */}
                     <Box
-                      component="img"
-                      src={issue.image}
-                      alt={issue.title}
                       sx={{
                         width: '100%',
-                        height: 96,
-                        objectFit: 'cover',
-                        borderRadius: '9px 9px 0 0',
+                        height: 140,
+                        borderRadius: '16px',
+                        overflow: 'hidden',
+                        mb: 1.5,
                       }}
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        const placeholder = document.createElement('div');
-                        placeholder.style.width = '100%';
-                        placeholder.style.height = '96px';
-                        placeholder.style.background = '#D1D5DB';
-                        placeholder.style.borderRadius = '9px 9px 0 0';
-                        e.target.parentElement.insertBefore(placeholder, e.target.parentElement.firstChild);
-                      }}
-                    />
+                    >
+                      <Box
+                        component="img"
+                        src={issue.image}
+                        alt={issue.title}
+                        sx={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          const placeholder = document.createElement('div');
+                          placeholder.style.width = '100%';
+                          placeholder.style.height = '140px';
+                          placeholder.style.background = '#F3F4F6';
+                          placeholder.style.borderRadius = '16px';
+                          e.target.parentElement.appendChild(placeholder);
+                        }}
+                      />
+                    </Box>
 
-                    <CardContent sx={{ p: 1.5 }}>
+                    <CardContent sx={{ p: '0 !important' }}>
                       <Typography
                         sx={{
                           fontFamily: 'Inter',
-                          fontWeight: 600,
-                          fontSize: 12,
-                          letterSpacing: '-0.5px',
+                          fontWeight: 700,
+                          fontSize: 16,
                           color: '#1F2937',
-                          mb: 0.8,
+                          mb: 0.5,
                         }}
                       >
                         {issue.title}
                       </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
-                        <LocationOnIcon sx={{ color: '#EF4444', fontSize: 8 }} />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <LocationOnIcon sx={{ color: '#EF4444', fontSize: 16 }} />
                         <Typography
                           sx={{
                             fontFamily: 'Inter',
-                            fontWeight: 400,
-                            fontSize: 11,
-                            letterSpacing: '-0.5px',
-                            color: '#4B5563',
+                            fontWeight: 500,
+                            fontSize: 14,
+                            color: '#6B7280',
                           }}
                         >
                           {issue.location}
