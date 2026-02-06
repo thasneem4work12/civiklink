@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../../redux/slices/authSlice';
 import {
   Box,
   Container,
@@ -31,6 +32,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const [activeTab, setActiveTab] = useState(0);
 
@@ -266,7 +268,12 @@ export default function HomePage() {
 
             <Button
               variant="outlined"
-              onClick={() => navigate('/login')}
+              onClick={() => {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                dispatch(logout());
+                navigate('/');
+              }}
               sx={{
                 textTransform: 'none',
                 fontFamily: 'Inter',

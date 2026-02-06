@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { logout } from '../../redux/slices/authSlice';
 import {
   Box,
   Container,
@@ -36,6 +38,7 @@ import {
 
 export default function NGODashboard() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const stats = [
     { label: 'Unresolved Issues', value: '24', icon: '📋', color: '#FEF3C7', textColor: '#92400E' },
@@ -300,7 +303,12 @@ export default function NGODashboard() {
               <Typography sx={{ fontSize: 13, color: '#6B7280' }}>සි | தமிழ் | ENG</Typography>
               <Button
                 startIcon={<Logout />}
-                onClick={() => navigate('/login')}
+                onClick={() => {
+                  localStorage.removeItem('token');
+                  localStorage.removeItem('user');
+                  dispatch(logout());
+                  navigate('/');
+                }}
                 sx={{
                   textTransform: 'none',
                   fontSize: 13,

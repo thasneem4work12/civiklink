@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { logout } from '../../redux/slices/authSlice';
 import {
   Container,
   Typography,
@@ -31,6 +33,7 @@ import {
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [editMode, setEditMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
 
@@ -140,7 +143,12 @@ export default function ProfilePage() {
                   variant="outlined"
                   fullWidth
                   startIcon={<Logout />}
-                  onClick={() => navigate('/login')}
+                  onClick={() => {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    dispatch(logout());
+                    navigate('/');
+                  }}
                   sx={{
                     mt: 2,
                     borderColor: '#DC2626',

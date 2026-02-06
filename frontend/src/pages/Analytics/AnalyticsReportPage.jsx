@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../../redux/slices/authSlice';
 import {
   Box,
   Container,
@@ -128,9 +129,14 @@ export default function AnalyticsReportPage() {
     { name: 'Electricity Board', government: 92, citizen: 90 },
     { name: 'Urban Council', government: 76, citizen: 73 },
   ];
+  
+  const dispatch = useDispatch();
 
   const handleLogout = () => {
-    navigate('/login');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    dispatch(logout());
+    navigate('/');
   };
 
   const getTrendIcon = (trend) => {

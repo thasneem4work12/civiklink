@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../../redux/slices/authSlice';
 import {
   Box,
   Container,
@@ -156,9 +157,13 @@ export default function LeaderboardPage() {
   ];
 
   const COLORS = ['#1E40AF', '#F59E0B'];
+  const dispatch = useDispatch();
 
   const handleLogout = () => {
-    navigate('/login');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    dispatch(logout());
+    navigate('/');
   };
 
   return (
